@@ -24,6 +24,8 @@ game_over = False
 pipe_gap = 150
 pipe_frequency = 1500 #miliseconds
 last_pipe = pygame.time.get_ticks() - pipe_frequency
+score = 0
+pass_pipe = False
 
 # load images
 bg = pygame.image.load('img/bg.png')
@@ -119,6 +121,18 @@ while run:
 
   # display the background image on the screen.
   screen.blit(bg,(0,0))
+
+  # Check score
+  if len(pipe_group) > 0:
+    if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left\
+      and bird_group.sprites()[0].rect.right < pipe_group()[0].rect.right\
+      and pass_pipe == False:
+      pass_pipe = True
+    if pass_pipe == True:
+      if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.right:
+        score += 1
+        pass_pipe = False
+
 
   # look for collision
   if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or flappy.rect.top < 0:
