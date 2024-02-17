@@ -20,6 +20,7 @@ ground_scroll = 0
 scroll_speed = 4
 flying = False
 game_over = False
+pipe_gap = 150
 
 # load images
 bg = pygame.image.load('img/bg.png')
@@ -74,13 +75,35 @@ class Bird(pygame.sprite.Sprite):
     else:
       self.image = pygame.transform.rotate(self.images[self.index], -90)
 
+class Pipe(pygame.sprite.Sprite):
+  def __init__(self, x, y, position):
+    pygame.sprite.Sprite.__init__(self)
+    self.image = pygame.image.load('img/pipe.png')
+    self.rect = self.image.get_rect()
+    # position 1 is from the top, -1 is from the bottom
+    if position == 1:
+      self.image = pygame.transform.flip(self.image, False, True)
+      self.rect.bottomleft = [x, y - (int(pipe_gap / 2))]
+    if position == -1:
+      self.rect.topleft = [x, y + (int(pipe_gap / 2))]
+
+  def update(self):
+    self.rect.x -= scroll_speed
+
 bird_group = pygame.sprite.Group()
+pipe_group = pygame.sprite.Group()
 
 # creates the placement of the object
 flappy = Bird(100, int(screen_height / 2))
 
 # makes the connection between the object and the group.
 bird_group.add(flappy)
+
+bottom_pipe = Pipe(300, int(screen_height / 2), -1)
+top_pipe = Pipe(300, int(screen_height / 2), 1)
+
+pipe_group.add(bottom_pipe)
+pipe_group.add(top_pipe)
 
 
 # This `run` variable should be consistantly running so that our screen will persist.
@@ -102,6 +125,8 @@ while run:
   # adding the bird to the game
   bird_group.draw(screen)
   bird_group.update()
+  pipe_group.draw(screen)
+  pipe_group.update()
 
   # draw the ground
   screen.blit(ground_img, (ground_scroll, 768))
