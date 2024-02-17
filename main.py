@@ -4,6 +4,10 @@ import random
 
 pygame.init()
 
+# This adds timing for the game's clock (helps with the scroll speed that we set below)
+clock = pygame.time.Clock()
+fps = 60
+
 # Screen dimensions
 screen_width = 864
 screen_height = 936
@@ -12,9 +16,9 @@ screen_height = 936
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Flappy Bird')
 
-# This adds timing for the game's clock (helps with the scroll speed that we set below)
-clock = pygame.time.Clock()
-fps = 60
+# define font
+font = pygame.font.SysFont('Bauhaus 93', 60)
+font_color = (255, 255, 255) #white
 
 # define game variables
 ground_scroll = 0
@@ -30,6 +34,12 @@ pass_pipe = False
 # load images
 bg = pygame.image.load('img/bg.png')
 ground_img = pygame.image.load('img/ground.png')
+
+
+def draw_text(text, font, text_col, x, y):
+  img = font.render(text, True, text_col)
+  screen.blit(img, (x, y))
+
 
 # create the bird object using sprite and add the three different images.
 class Bird(pygame.sprite.Sprite):
@@ -68,6 +78,7 @@ class Bird(pygame.sprite.Sprite):
       # handle the animation for the bird
       self.counter += 1
       flap_cooldown = 5
+
       if self.counter > flap_cooldown:
         self.counter = 0
         self.index += 1
@@ -122,10 +133,17 @@ while run:
   # display the background image on the screen.
   screen.blit(bg,(0,0))
 
+  bird_group.draw(screen)
+  bird_group.update()
+  pipe_group.draw(screen)
+  
+  # draw the ground
+  screen.blit(ground_img, (ground_scroll, 768))
+
   # Check score
   if len(pipe_group) > 0:
     if bird_group.sprites()[0].rect.left > pipe_group.sprites()[0].rect.left\
-      and bird_group.sprites()[0].rect.right < pipe_group()[0].rect.right\
+      and bird_group.sprites()[0].rect.right < pipe_group.sprites()[0].rect.right\
       and pass_pipe == False:
       pass_pipe = True
     if pass_pipe == True:
@@ -133,6 +151,7 @@ while run:
         score += 1
         pass_pipe = False
 
+  draw_text(str(score), font, font_color, int(screen_width / 2), 20)
 
   # look for collision
   if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or flappy.rect.top < 0:
@@ -143,16 +162,9 @@ while run:
     game_over = True
     flying = False
 
-  # adding the bird to the game
-  bird_group.draw(screen)
-  bird_group.update()
-  pipe_group.draw(screen)
-  pipe_group.update()
-
-  # draw the ground
-  screen.blit(ground_img, (ground_scroll, 768))
-
-  #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
+  
+  
+  # #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
 
   if game_over == False and flying == True:
     # generate new pipes
@@ -169,6 +181,8 @@ while run:
     ground_scroll -= scroll_speed
     if abs(ground_scroll) > 35:
       ground_scroll = 0
+
+    pipe_group.update()
 
   # This creates the 'exit' game and allows us to close the game.
   for event in pygame.event.get():
