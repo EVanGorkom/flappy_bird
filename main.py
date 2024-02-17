@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Flappy Bird')
 
 # define font
-font = pygame.font.SysFont('Bauhaus 93', 60)
+font = pygame.font.SysFont('Bauhaus 93', 80)
 font_color = (255, 255, 255) #white
 
 # define game variables
@@ -25,7 +25,9 @@ ground_scroll = 0
 scroll_speed = 4
 flying = False
 game_over = False
-pipe_gap = 150
+easy_pipe_gap = 250
+nrml_pipe_gap = 170
+hard_pipe_gap = 100
 pipe_frequency = 1500 #miliseconds
 last_pipe = pygame.time.get_ticks() - pipe_frequency
 score = 0
@@ -34,12 +36,19 @@ pass_pipe = False
 # load images
 bg = pygame.image.load('img/bg.png')
 ground_img = pygame.image.load('img/ground.png')
+button_img = pygame.image.load('img/restart.png')
 
 
 def draw_text(text, font, text_col, x, y):
   img = font.render(text, True, text_col)
   screen.blit(img, (x, y))
 
+def reset_game():
+  pipe_group.empty()
+  flappy.rect.x = 100
+  flappy.rect.y = int(screen_height / 2)
+  score = 0
+  return score
 
 # create the bird object using sprite and add the three different images.
 class Bird(pygame.sprite.Sprite):
@@ -58,7 +67,6 @@ class Bird(pygame.sprite.Sprite):
     self.clicked = False
 
   def update(self):
-
     # gravity
     if flying == True:
       self.vel += 0.5
@@ -67,8 +75,8 @@ class Bird(pygame.sprite.Sprite):
       if self.rect.bottom < 768:
         self.rect.y += int(self.vel)
 
+    # jump
     if game_over == False:
-      # jump
       if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
         self.clicked = True
         self.vel = -10
@@ -97,11 +105,24 @@ class Pipe(pygame.sprite.Sprite):
     self.image = pygame.image.load('img/pipe.png')
     self.rect = self.image.get_rect()
     # position 1 is from the top, -1 is from the bottom
-    if position == 1:
-      self.image = pygame.transform.flip(self.image, False, True)
-      self.rect.bottomleft = [x, y - (int(pipe_gap / 2))]
-    if position == -1:
-      self.rect.topleft = [x, y + (int(pipe_gap / 2))]
+    if score >= 30:
+      if position == 1:
+        self.image = pygame.transform.flip(self.image, False, True)
+        self.rect.bottomleft = [x, y - (int(hard_pipe_gap / 2))]
+      if position == -1:
+        self.rect.topleft = [x, y + (int(hard_pipe_gap / 2))]
+    elif score >= 12:
+      if position == 1:
+        self.image = pygame.transform.flip(self.image, False, True)
+        self.rect.bottomleft = [x, y - (int(nrml_pipe_gap / 2))]
+      if position == -1:
+        self.rect.topleft = [x, y + (int(nrml_pipe_gap / 2))]
+    else:
+      if position == 1:
+        self.image = pygame.transform.flip(self.image, False, True)
+        self.rect.bottomleft = [x, y - (int(easy_pipe_gap / 2))]
+      if position == -1:
+        self.rect.topleft = [x, y + (int(easy_pipe_gap / 2))]
 
   def update(self):
     if game_over == False:
@@ -109,6 +130,29 @@ class Pipe(pygame.sprite.Sprite):
       if self.rect.right < 0:
         self.kill()
 
+
+class Button():
+  def __init__(self, x, y, image):
+    self.image = image
+    self.rect = self.image.get_rect()
+    self.rect.topleft = (x, y)
+    
+  def draw(self):
+
+    action = False
+
+    # get mouse position
+    pos = pygame.mouse.get_pos()
+
+    # check if mouse is over button
+    if self.rect.collidepoint(pos):
+      if pygame.mouse.get_pressed()[0] == 1:
+        action = True
+
+    # draw button
+    screen.blit(self.image, (self.rect.x, self.rect.y))
+
+    return action
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
@@ -119,7 +163,7 @@ flappy = Bird(100, int(screen_height / 2))
 # makes the connection between the object and the group.
 bird_group.add(flappy)
 
-
+button = Button(screen_width // 2 - 50, screen_height // 2 - 100, button_img)
 
 
 # This `run` variable should be consistantly running so that our screen will persist.
@@ -183,6 +227,12 @@ while run:
       ground_scroll = 0
 
     pipe_group.update()
+
+  # check for game over and reset
+  if game_over == True:
+    if button.draw() == True:
+      game_over = False
+      score = reset_game()
 
   # This creates the 'exit' game and allows us to close the game.
   for event in pygame.event.get():
