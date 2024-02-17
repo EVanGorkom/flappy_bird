@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import random
 
 pygame.init()
 
@@ -21,6 +22,8 @@ scroll_speed = 4
 flying = False
 game_over = False
 pipe_gap = 150
+pipe_frequency = 1500 #miliseconds
+last_pipe = pygame.time.get_ticks() - pipe_frequency
 
 # load images
 bg = pygame.image.load('img/bg.png')
@@ -88,7 +91,11 @@ class Pipe(pygame.sprite.Sprite):
       self.rect.topleft = [x, y + (int(pipe_gap / 2))]
 
   def update(self):
-    self.rect.x -= scroll_speed
+    if game_over == False:
+      self.rect.x -= scroll_speed
+      if self.rect.right < 0:
+        self.kill()
+
 
 bird_group = pygame.sprite.Group()
 pipe_group = pygame.sprite.Group()
@@ -99,11 +106,7 @@ flappy = Bird(100, int(screen_height / 2))
 # makes the connection between the object and the group.
 bird_group.add(flappy)
 
-bottom_pipe = Pipe(300, int(screen_height / 2), -1)
-top_pipe = Pipe(300, int(screen_height / 2), 1)
 
-pipe_group.add(bottom_pipe)
-pipe_group.add(top_pipe)
 
 
 # This `run` variable should be consistantly running so that our screen will persist.
@@ -117,8 +120,12 @@ while run:
   # display the background image on the screen.
   screen.blit(bg,(0,0))
 
+  # look for collision
+  if pygame.sprite.groupcollide(bird_group, pipe_group, False, False) or flappy.rect.top < 0:
+    game_over = True
+
   # check if bird has hit the ground
-  if flappy.rect.bottom > 768:
+  if flappy.rect.bottom >= 768:
     game_over = True
     flying = False
 
@@ -133,7 +140,18 @@ while run:
 
   #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
 
-  if game_over == False:
+  if game_over == False and flying == True:
+    # generate new pipes
+    time_now = pygame.time.get_ticks()
+    if time_now - last_pipe > pipe_frequency:
+      pipe_height = random.randint(-100, 100)
+      bottom_pipe = Pipe(screen_width, int(screen_height / 2) + pipe_height, -1)
+      top_pipe = Pipe(screen_width, int(screen_height / 2) + pipe_height, 1)
+      pipe_group.add(bottom_pipe)
+      pipe_group.add(top_pipe)
+      last_pipe = time_now
+
+    # ground scroll feature
     ground_scroll -= scroll_speed
     if abs(ground_scroll) > 35:
       ground_scroll = 0
