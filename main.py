@@ -13,11 +13,13 @@ pygame.display.set_caption('Flappy Bird')
 
 # This adds timing for the game's clock (helps with the scroll speed that we set below)
 clock = pygame.time.Clock()
-fps = 50
+fps = 60
 
 # define game variables
 ground_scroll = 0
 scroll_speed = 4
+flying = False
+game_over = False
 
 # load images
 bg = pygame.image.load('img/bg.png')
@@ -42,28 +44,35 @@ class Bird(pygame.sprite.Sprite):
   def update(self):
 
     # gravity
-    self.vel += 0.5
-    if self.vel > 8:
-      self.vel = 8
-    if self.rect.bottom < 768:
-      self.rect.y += int(self.vel)
+    if flying == True:
+      self.vel += 0.5
+      if self.vel > 8:
+        self.vel = 8
+      if self.rect.bottom < 768:
+        self.rect.y += int(self.vel)
 
-    # jump
-    if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-      self.clicked = True
-      self.vel = -10
-    if pygame.mouse.get_pressed()[0] == 0:
-      self.clicked = False
+    if game_over == False:
+      # jump
+      if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+        self.clicked = True
+        self.vel = -10
+      if pygame.mouse.get_pressed()[0] == 0:
+        self.clicked = False
 
-    # handle the animation for the bird
-    self.counter += 1
-    flap_cooldown = 5
-    if self.counter > flap_cooldown:
-      self.counter = 0
-      self.index += 1
-      if self.index >= len(self.images):
-        self.index = 0
-    self.image =  self.images[self.index]
+      # handle the animation for the bird
+      self.counter += 1
+      flap_cooldown = 5
+      if self.counter > flap_cooldown:
+        self.counter = 0
+        self.index += 1
+        if self.index >= len(self.images):
+          self.index = 0
+      self.image =  self.images[self.index]
+
+      # rotate the bird
+      self.image = pygame.transform.rotate(self.images[self.index], self.vel * -2)
+    else:
+      self.image = pygame.transform.rotate(self.images[self.index], -90)
 
 bird_group = pygame.sprite.Group()
 
@@ -85,20 +94,31 @@ while run:
   # display the background image on the screen.
   screen.blit(bg,(0,0))
 
+  # check if bird has hit the ground
+  if flappy.rect.bottom > 768:
+    game_over = True
+    flying = False
+
   # adding the bird to the game
   bird_group.draw(screen)
   bird_group.update()
 
-  #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
+  # draw the ground
   screen.blit(ground_img, (ground_scroll, 768))
-  ground_scroll -= scroll_speed
-  if abs(ground_scroll) > 35:
-    ground_scroll = 0
+
+  #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
+
+  if game_over == False:
+    ground_scroll -= scroll_speed
+    if abs(ground_scroll) > 35:
+      ground_scroll = 0
 
   # This creates the 'exit' game and allows us to close the game.
   for event in pygame.event.get():
-    if event.type ==pygame.QUIT:
+    if event.type == pygame.QUIT:
       run = False
+    if event.type == pygame.MOUSEBUTTONDOWN and flying == False and game_over == False:
+      flying = True
 
   # This continuously updates the display of the screen after each loop in the while loop.
   pygame.display.update()
