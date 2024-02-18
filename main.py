@@ -210,10 +210,6 @@ while run:
     game_over = True
     flying = False
 
-  
-  
-  # #draw and scroll the ground. This code here changes the code such that the image reset once it exceeds the first diagonal slash, using the timing from the clock feature to give the impression of the ground scrolling endlessly.
-
   if game_over == False and flying == True:
     # generate new pipes
     time_now = pygame.time.get_ticks()
@@ -234,9 +230,11 @@ while run:
 
   # check for game over and reset
   if game_over == True:
+    pygame.mixer.music.stop()
     if restart_button.draw() == True:
       game_over = False
       score = reset_game()
+      pygame.mixer.music.play(loops=-1)
 
   # This creates the 'exit' game and allows us to close the game.
   for event in pygame.event.get():
