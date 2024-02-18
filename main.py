@@ -18,6 +18,7 @@ pygame.display.set_caption('Flappy Bird')
 
 # load music file
 pygame.mixer.music.load('music/roa-music-pixel-story.mp3')
+game_over_jingle = pygame.mixer.Sound('music/game_over.wav')
 
 # define font
 font = pygame.font.SysFont('Bauhaus 93', 100)
@@ -169,7 +170,7 @@ restart_button = Button(screen_width // 2 - 50, screen_height // 2 - 100, restar
 
 # play the music file
 pygame.mixer.music.play(loops=-1)
-
+game_over_jingle_played = False
 # This `run` variable should be consistantly running so that our screen will persist.
 run = True
 while run:
@@ -230,8 +231,12 @@ while run:
 
   # check for game over and reset
   if game_over == True:
-    pygame.mixer.music.stop()
+    if not game_over_jingle_played:
+      pygame.mixer.music.stop()
+      game_over_jingle.play()
+      game_over_jingle_played = True
     if restart_button.draw() == True:
+      game_over_jingle_played = False
       game_over = False
       score = reset_game()
       pygame.mixer.music.play(loops=-1)
