@@ -36,7 +36,8 @@ pass_pipe = False
 # load images
 bg = pygame.image.load('img/bg.png')
 ground_img = pygame.image.load('img/ground.png')
-button_img = pygame.image.load('img/restart.png')
+restart_button_img = pygame.image.load('img/restart.png')
+start_img = pygame.image.load('img/8-bit-start.png')
 
 def draw_text(text, font, text_col, x, y):
   img = font.render(text, True, text_col)
@@ -139,7 +140,6 @@ class Button():
   def draw(self):
 
     action = False
-
     # get mouse position
     pos = pygame.mouse.get_pos()
 
@@ -161,7 +161,8 @@ flappy = Bird(100, int(screen_height / 2))
 # makes the connection between the object and the group.
 bird_group.add(flappy)
 
-button = Button(screen_width // 2 - 50, screen_height // 2 - 100, button_img)
+start_button = Button(screen_width // 2 - 50, screen_height // 2 - 100, start_img)
+restart_button = Button(screen_width // 2 - 50, screen_height // 2 - 100, restart_button_img)
 
 
 # This `run` variable should be consistantly running so that our screen will persist.
@@ -227,7 +228,7 @@ while run:
 
   # check for game over and reset
   if game_over == True:
-    if button.draw() == True:
+    if restart_button.draw() == True:
       game_over = False
       score = reset_game()
 
