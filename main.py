@@ -16,8 +16,11 @@ screen_height = 936
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Flappy Bird')
 
+# load music file
+pygame.mixer.music.load('music/roa-music-pixel-story.mp3')
+
 # define font
-font = pygame.font.SysFont('Bauhaus 93', 60)
+font = pygame.font.SysFont('Bauhaus 93', 100)
 font_color = (255, 255, 255) #white
 
 # define game variables
@@ -164,6 +167,8 @@ bird_group.add(flappy)
 start_button = Button(screen_width // 2 - 50, screen_height // 2 - 100, start_img)
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 - 100, restart_button_img)
 
+# play the music file
+pygame.mixer.music.play(loops=-1)
 
 # This `run` variable should be consistantly running so that our screen will persist.
 run = True
@@ -171,6 +176,7 @@ while run:
 
   # This ticks the game's clock by the speed we set. In this case we set it to our variable `fps` which is defined above.
   clock.tick(fps)
+
 
   # display the background image on the screen.
   screen.blit(bg,(0,0))
