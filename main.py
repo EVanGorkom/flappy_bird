@@ -182,9 +182,9 @@ while run:
   # display the background image on the screen.
   screen.blit(bg,(0,0))
 
+  pipe_group.draw(screen)
   bird_group.draw(screen)
   bird_group.update()
-  pipe_group.draw(screen)
   
   # draw the ground
   screen.blit(ground_img, (ground_scroll, 768))
